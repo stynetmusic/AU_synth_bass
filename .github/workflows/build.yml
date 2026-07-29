@@ -1,0 +1,54 @@
+name: Build AU_synth_bass
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build macOS Audio Unit
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Xcode tools
+        run: |
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Clang version:"
+          clang --version
+          echo "Build tools available:"
+          which make
+          which clang
+
+      - name: Build AU plugin
+        run: |
+          make clean
+          make
+
+      - name: Verify build output
+        run: |
+          echo "Build output:"
+          find . -name "*.component" -o -name "AU_synth_bass" -type f
+          ls -la AU_synth_bass.component/Contents/MacOS/ 2>/dev/null || echo "Binary not found yet"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AU_synth_bass.plugin
+          path: |
+            AU_synth_bass.component/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: List bundle contents
+        run: |
+          echo "=== Bundle structure ==="
+          find AU_synth_bass.component -type f | sort
+          echo "=== Info.plist ==="
+          cat AU_synth_bass.component/Contents/Info.plist
