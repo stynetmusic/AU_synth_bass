@@ -6,13 +6,14 @@ HDRS = src/fm_synth.h
 
 all: $(TARGET)
 
-$(TARGET): $(SRC) $(HDRS)
+AU_synth_bass.component/Contents/MacOS:
 	@mkdir -p AU_synth_bass.component/Contents/MacOS
-	$(CC) $(CFLAGS) -o $@ $(SRC) -install_name @executable_path/AU_synth_bass -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -lm
+
+$(TARGET): $(SRC) $(HDRS) | AU_synth_bass.component/Contents/MacOS
+	$(CC) $(CFLAGS) -dynamiclib -Wl,-install_name,@executable_path/AU_synth_bass -o $@ $(SRC) -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -lm
 
 clean:
 	rm -f $(TARGET)
-	rm -rf AU_synth_bass.component
 
 install: all
 	cp -R AU_synth_bass.component ~/Library/Audio/PPlug-Ins/
