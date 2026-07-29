@@ -16,39 +16,91 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Xcode tools
+      - name: Verify build tools
         run: |
-          echo "Xcode version:"
+          echo "=== Xcode ==="
           xcodebuild -version
-          echo "Clang version:"
+          echo "=== Clang ==="
           clang --version
-          echo "Build tools available:"
-          which make
-          which clang
+          echo "=== Make ==="
+          make --version | head -1
+          echo "=== Homebrew ==="
+          brew --version 2>/dev/null || echo "No Homebrew"
 
       - name: Build AU plugin
         run: |
           make clean
           make
 
-      - name: Verify build output
+      - name: Validate bundle structure
         run: |
-          echo "Build output:"
-          find . -name "*.component" -o -name "AU_synth_bass" -type f
-          ls -la AU_synth_bass.component/Contents/MacOS/ 2>/dev/null || echo "Binary not found yet"
+          echo "=== Bundle files ==="
+          find AU_synth_bass.component -type f | sort
+          echo ""
+          echo "=== Info.plist ==="
+          /usr/libexec/PlistBuddy -c "Print" AU_synth_bass.component/Contents/Info.plist
+          echo ""
+          echo "=== Required keys check ==="
+          for key in CFBundleIdentifier CFBundleName CFBundlePackageType AudioComponents; do
+            value=$(/usr/libexec/PlistBuddy -c "Print :$key" AU_synth_bass.component/Contents/Info.plist 2>/dev/null)
+            if [ -n "$value" ]; then
+              echo "  ✅ $key = $value"
+            else
+              echo "  ❌ $key missing"
+              exit 1
+            fi
+          done
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: AU_synth_bass.plugin
-          path: |
-            AU_synth_bass.component/
+          path: AU_synth_bass.component
           retention-days: 30
           if-no-files-found: error
 
-      - name: List bundle contents
+  package-release:
+    name: Package Release Build
+    runs-on: macos-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build AU plugin
         run: |
-          echo "=== Bundle structure ==="
-          find AU_synth_bass.component -type f | sort
-          echo "=== Info.plist ==="
-          cat AU_synth_bass.component/Contents/Info.plist
+          make clean
+          make
+
+      - name: Package as tar.gz
+        run: |
+          tar -czf AU_synth_bass-${{ github.sha }}.tar.gz AU_synth_bass.component/
+          ls -lh AU_synth_bass-*.tar.gz
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AU_synth_bass-release
+          path: AU_synth_bass-${{ github.sha }}.tar.gz
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AU_synth_bass-${{ github.sha }}.tar.gz
+          name: AU_synth_bass ${{ github.ref_name }}
+          body: |
+            macOS Audio Unit plugin build
+
+            ## Install
+            Copy `AU_synth_bass.component` to:
+            - `~/Library/Audio/PPlug-Ins/` (user)
+            - `/Library/Audio/PPlug-Ins/` (all users)
+
+            Then restart your AU host (Ableton Live, Logic Pro, GarageBand, etc.)
+          draft: false
+          prerelease: false
