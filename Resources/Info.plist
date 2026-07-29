@@ -39,7 +39,5 @@
             <string>1.0.0</string>
         </dict>
     </array>
-    <key>NSPrincipalClass</key>
-    <string>AU_synth_bass</string>
 </dict>
 </plist>
