@@ -1,16 +1,17 @@
 CC = clang
-CFLAGS = -Wall -O2 -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -lm
+CFLAGS = -Wall -O2
+LDFLAGS = -dynamiclib -Wl,-install_name,@executable_path/AU_synth_bass
+FRAMEWORKS = -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation
+LIBS = -lm
+
 TARGET = AU_synth_bass.component/Contents/MacOS/AU_synth_bass
 SRC = src/fm_synth.c
-HDRS = src/fm_synth.h
 
 all: $(TARGET)
 
-AU_synth_bass.component/Contents/MacOS:
+$(TARGET): $(SRC)
 	@mkdir -p AU_synth_bass.component/Contents/MacOS
-
-$(TARGET): $(SRC) $(HDRS) | AU_synth_bass.component/Contents/MacOS
-	$(CC) $(CFLAGS) -dynamiclib -Wl,-install_name,@executable_path/AU_synth_bass -o $@ $(SRC) -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -lm
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(FRAMEWORKS) $(LIBS)
 
 clean:
 	rm -f $(TARGET)
