@@ -1,6 +1,6 @@
 CC = clang
-CFLAGS = -Wall -O2
-LDFLAGS = -dynamiclib -Wl,-install_name,@executable_path/AU_synth_bass
+CFLAGS = -Wall -O2 -arch arm64
+LDFLAGS = -dynamiclib -arch arm64 -Wl,-install_name,@executable_path/AU_synth_bass
 FRAMEWORKS = -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation
 LIBS = -lm
 
