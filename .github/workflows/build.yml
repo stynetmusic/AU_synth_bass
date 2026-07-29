@@ -38,6 +38,12 @@ jobs:
           file AU_synth_bass.component/Contents/MacOS/AU_synth_bass
           lipo -info AU_synth_bass.component/Contents/MacOS/AU_synth_bass
 
+      - name: Install to plugin directory
+        run: |
+          make install
+          echo "=== Installed plugins ==="
+          ls -la ~/Library/Audio/Plug-Ins/Components/
+
       - name: Validate bundle structure
         run: |
           echo "=== Bundle files ==="
@@ -93,7 +99,7 @@ jobs:
 
             ## Install
             Copy `AU_synth_bass.component` to:
-            - `~/Library/Audio/PPlug-Ins/` (user)
+            - `~/Library/Audio/Plug-Ins/Components/` (user)
             - `/Library/Audio/PPlug-Ins/` (all users)
 
             Then restart your AU host (Ableton Live, Logic Pro, GarageBand, etc.)
