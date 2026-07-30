@@ -1,3 +1,5 @@
 ._*
 .DS_Store
 *.tmp
+arm64/
+release/

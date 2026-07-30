@@ -297,18 +297,19 @@ OSStatus renderAudio(SynthInstance *synth, AudioBufferList *ioData, UInt32 inNum
     return noErr;
 }
 
-static OSStatus openProc(void *self, AudioComponentInstance mInstance) {
-    (void)mInstance;
+static OSStatus initializeProc(void *self) {
+    SynthInstance *synth = (SynthInstance *)self;
     if (!gSynth) {
         gSynth = (SynthInstance *)calloc(1, sizeof(SynthInstance));
         if (!gSynth) return kAudioUnitErr_FailedInitialization;
     }
-    initSynth(gSynth);
-    gSynth->sampleRate = gSampleRate;
+    synth = gSynth;
+    initSynth(synth);
+    synth->sampleRate = gSampleRate;
     return noErr;
 }
 
-static OSStatus closeProc(void *self) {
+static OSStatus uninitializeProc(void *self) {
     (void)self;
     if (gSynth) {
         free(gSynth);
@@ -456,10 +457,53 @@ static OSStatus setParameterProc(void *self, AudioUnitParameterID inID, AudioUni
     return setParameterValue(synth, inID, inValue, inBufferOffsetInFrames);
 }
 
+static AudioComponentMethod lookupProc(SInt16 selector) {
+    switch (selector) {
+        case kAudioUnitInitializeSelect:
+            return (AudioComponentMethod)initializeProc;
+        case kAudioUnitUninitializeSelect:
+            return (AudioComponentMethod)uninitializeProc;
+        case kAudioUnitGetPropertyInfoSelect:
+            return (AudioComponentMethod)getPropertyInfoProc;
+        case kAudioUnitGetPropertySelect:
+            return (AudioComponentMethod)getPropertyProc;
+        case kAudioUnitSetPropertySelect:
+            return (AudioComponentMethod)setPropertyProc;
+        case kAudioUnitRenderSelect:
+            return (AudioComponentMethod)renderProc;
+        case kAudioUnitGetParameterSelect:
+            return (AudioComponentMethod)getParameterProc;
+        case kAudioUnitSetParameterSelect:
+            return (AudioComponentMethod)setParameterProc;
+        default:
+            return NULL;
+    }
+}
+
+static OSStatus openProc(void *self, AudioComponentInstance mInstance) {
+    (void)mInstance;
+    if (!gSynth) {
+        gSynth = (SynthInstance *)calloc(1, sizeof(SynthInstance));
+        if (!gSynth) return kAudioUnitErr_FailedInitialization;
+    }
+    initSynth(gSynth);
+    gSynth->sampleRate = gSampleRate;
+    return noErr;
+}
+
+static OSStatus closeProc(void *self) {
+    (void)self;
+    if (gSynth) {
+        free(gSynth);
+        gSynth = NULL;
+    }
+    return noErr;
+}
+
 static AudioComponentPlugInInterface gAUInterface = {
     .Open = openProc,
     .Close = closeProc,
-    .Lookup = NULL,
+    .Lookup = lookupProc,
     .reserved = NULL
 };
 
