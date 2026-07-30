@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -O2 -arch arm64
 LDFLAGS = -dynamiclib -arch arm64 -Wl,-install_name,@executable_path/AU_synth_bass
-FRAMEWORKS = -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -framework Cocoa -framework CoreFoundation
+FRAMEWORKS = -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -framework Cocoa -framework CoreFoundation -framework CoreMIDI
 LIBS = -lm
 
 TARGET_A64 = arm64/AU_synth_bass.component/Contents/MacOS/AU_synth_bass
@@ -13,7 +13,7 @@ HDRS = src/fm_synth.h
 INFO_PLIST = Resources/Info.plist
 HTML_RES = Resources/html/index.html
 
-all: $(TARGET_A64) $(TARGET_REL)
+all: $(TARGET_A64) $(TARGET_REL) arm64/AU_synth_bass.component/Contents/Info.plist arm64/AU_synth_bass.component/Contents/Resources/html/index.html release/AU_synth_bass.component/Contents/Info.plist release/AU_synth_bass.component/Contents/Resources/html/index.html
 
 # ---- Binary builds ----
 

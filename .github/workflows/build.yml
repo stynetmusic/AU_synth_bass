@@ -35,8 +35,8 @@ jobs:
       - name: Verify binary architecture
         run: |
           echo "=== Binary info ==="
-          file AU_synth_bass.component/Contents/MacOS/AU_synth_bass
-          lipo -info AU_synth_bass.component/Contents/MacOS/AU_synth_bass
+          file arm64/AU_synth_bass.component/Contents/MacOS/AU_synth_bass
+          lipo -info arm64/AU_synth_bass.component/Contents/MacOS/AU_synth_bass
 
       - name: Install to plugin directory
         run: |
@@ -47,16 +47,16 @@ jobs:
       - name: Validate bundle structure
         run: |
           echo "=== Bundle files ==="
-          find AU_synth_bass.component -type f | sort
+          find arm64/AU_synth_bass.component -type f | sort
           echo ""
           echo "=== Info.plist ==="
-          /usr/libexec/PlistBuddy -c "Print" AU_synth_bass.component/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Print" arm64/AU_synth_bass.component/Contents/Info.plist
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: AU_synth_bass.arm64.plugin
-          path: AU_synth_bass.component
+          path: arm64/AU_synth_bass.component
           retention-days: 30
           if-no-files-found: error
 
@@ -77,7 +77,7 @@ jobs:
 
       - name: Package as tar.gz
         run: |
-          tar -czf AU_synth_bass-${{ github.sha }}.tar.gz AU_synth_bass.component/
+          tar -czf AU_synth_bass-${{ github.sha }}.tar.gz arm64/AU_synth_bass.component/
           ls -lh AU_synth_bass-*.tar.gz
 
       - name: Upload artifact
