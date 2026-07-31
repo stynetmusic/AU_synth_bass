@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -O2 -arch arm64
+CFLAGS = -Wall -O2 -arch arm64 -fmodules
 LDFLAGS = -dynamiclib -arch arm64 -Wl,-install_name,@executable_path/AU_synth_bass
 FRAMEWORKS = -framework AudioUnit -framework AudioToolbox -framework CoreAudio -framework Foundation -framework Cocoa -framework CoreFoundation -framework CoreMIDI
 LIBS = -lm
@@ -13,17 +13,13 @@ HDRS = src/fm_synth.h
 INFO_PLIST = Resources/Info.plist
 HTML_RES = Resources/html/index.html
 
-all: $(TARGET_A64) $(TARGET_REL) arm64/AU_synth_bass.component/Contents/Info.plist arm64/AU_synth_bass.component/Contents/Resources/html/index.html release/AU_synth_bass.component/Contents/Info.plist release/AU_synth_bass.component/Contents/Resources/html/index.html
-
-# ---- Binary builds ----
+all: $(TARGET_A64) $(TARGET_REL)
 
 $(TARGET_A64): $(SRC) $(HDRS) | arm64/AU_synth_bass.component/Contents/MacOS
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(FRAMEWORKS) $(LIBS)
 
 $(TARGET_REL): $(SRC) $(HDRS) | release/AU_synth_bass.component/Contents/MacOS
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(FRAMEWORKS) $(LIBS)
-
-# ---- Directory creation ----
 
 arm64/AU_synth_bass.component/Contents/MacOS:
 	mkdir -p $@
@@ -67,7 +63,7 @@ arm64/AU_synth_bass.component:
 release/AU_synth_bass.component:
 	mkdir -p $@
 
-# ---- Phony targets ----
+all: $(TARGET_A64) $(TARGET_REL) arm64/AU_synth_bass.component/Contents/Info.plist arm64/AU_synth_bass.component/Contents/Resources/html/index.html release/AU_synth_bass.component/Contents/Info.plist release/AU_synth_bass.component/Contents/Resources/html/index.html
 
 clean:
 	rm -rf arm64 release
